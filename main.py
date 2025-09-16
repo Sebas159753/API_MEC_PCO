@@ -9,136 +9,70 @@ from typing import Optional
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Importaciones de drivers de DB con manejo de errores
-db_drivers = {}
-
+# Importar pymssql (driver principal)
 try:
     import pymssql
-    db_drivers['pymssql'] = pymssql
-    logger.info("pymssql driver loaded successfully")
+    logger.info("pymssql loaded successfully")
 except ImportError as e:
-    logger.warning(f"pymssql not available: {e}")
-
-try:
-    import pyodbc
-    db_drivers['pyodbc'] = pyodbc
-    logger.info("pyodbc driver loaded successfully")
-except ImportError as e:
-    logger.warning(f"pyodbc not available: {e}")
-
-if not db_drivers:
-    logger.error("No database drivers available!")
+    logger.error(f"ERROR: pymssql no está disponible: {e}")
+    logger.error("Instala pymssql: pip install pymssql")
+    raise ImportError("pymssql es requerido para esta aplicación")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("API starting up...")
-    logger.info(f"Available DB drivers: {list(db_drivers.keys())}")
+    logger.info("🚀 API starting up...")
     yield
     # Shutdown
-    logger.info("API shutting down...")
+    logger.info("🛑 API shutting down...")
 
-# Crear app FastAPI con configuración mejorada
+# App FastAPI
 app = FastAPI(
     title="API MEC PCO",
-    description="API para consulta de datos de SQL Server",
-    version="1.0.1",
+    description="API optimizada para consulta de datos SQL Server",
+    version="1.1.0",
     lifespan=lifespan
 )
 
-# Configurar CORS
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar dominios específicos
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Variables de conexión con validación
+# Variables de configuración
 SQL_SERVER = os.getenv("SQL_SERVER", "10.70.0.31")
 SQL_DATABASE = os.getenv("SQL_DATABASE", "dbcentral")
 SQL_USERNAME = os.getenv("SQL_USERNAME", "usrsicav")
 SQL_PASSWORD = os.getenv("SQL_PASSWORD", "$icav2012*")
 API_KEY = os.getenv("API_KEY", "prueba")
 
-# Validar configuración crítica
-if not SQL_SERVER or not SQL_DATABASE:
-    logger.error("Database configuration is incomplete!")
+# Validar configuración
+if not all([SQL_SERVER, SQL_DATABASE, SQL_USERNAME, SQL_PASSWORD]):
+    logger.error("❌ Configuración de base de datos incompleta!")
 
-# Conexión robusta con múltiples drivers
+# Función de conexión simplificada
 def get_connection():
-    """
-    Establece conexión a SQL Server usando el mejor driver disponible.
-    Prioridad: pymssql -> pyodbc
-    """
-    connection_errors = []
-    
-    # Intentar con pymssql (mejor para contenedores Linux)
-    if 'pymssql' in db_drivers:
-        try:
-            logger.info("Attempting connection with pymssql...")
-            conn = db_drivers['pymssql'].connect(
-                server=SQL_SERVER,
-                database=SQL_DATABASE,
-                user=SQL_USERNAME,
-                password=SQL_PASSWORD,
-                timeout=30,
-                login_timeout=30
-            )
-            logger.info("Successfully connected with pymssql")
-            return conn
-        except Exception as e:
-            error_msg = f"pymssql connection failed: {str(e)}"
-            logger.warning(error_msg)
-            connection_errors.append(error_msg)
-    
-    # Fallback a pyodbc
-    if 'pyodbc' in db_drivers:
-        try:
-            logger.info("Attempting connection with pyodbc...")
-            # Intentar diferentes drivers ODBC
-            drivers_to_try = [
-                "ODBC Driver 18 for SQL Server",
-                "ODBC Driver 17 for SQL Server",
-                "FreeTDS"
-            ]
-            
-            for driver in drivers_to_try:
-                try:
-                    conn_str = (
-                        f"DRIVER={{{driver}}};"
-                        f"SERVER={SQL_SERVER};"
-                        f"DATABASE={SQL_DATABASE};"
-                        f"UID={SQL_USERNAME};"
-                        f"PWD={SQL_PASSWORD};"
-                        "Encrypt=no;"
-                        "TrustServerCertificate=yes;"
-                        "Connection Timeout=30;"
-                    )
-                    conn = db_drivers['pyodbc'].connect(conn_str)
-                    logger.info(f"Successfully connected with pyodbc using {driver}")
-                    return conn
-                except Exception as driver_error:
-                    logger.debug(f"Driver {driver} failed: {driver_error}")
-                    continue
-            
-            # Si llegamos aquí, todos los drivers fallaron
-            error_msg = "All pyodbc drivers failed"
-            connection_errors.append(error_msg)
-            
-        except Exception as e:
-            error_msg = f"pyodbc connection failed: {str(e)}"
-            logger.error(error_msg)
-            connection_errors.append(error_msg)
-    
-    # Si llegamos aquí, todas las conexiones fallaron
-    all_errors = "; ".join(connection_errors)
-    logger.error(f"All database connection attempts failed: {all_errors}")
-    raise HTTPException(
-        status_code=500, 
-        detail=f"Database connection failed. Errors: {all_errors}"
-    )
+    """Conecta a SQL Server usando pymssql"""
+    try:
+        logger.debug(f"🔌 Conectando a {SQL_SERVER}:{SQL_DATABASE}")
+        conn = pymssql.connect(
+            server=SQL_SERVER,
+            database=SQL_DATABASE,
+            user=SQL_USERNAME,
+            password=SQL_PASSWORD,
+            timeout=30,
+            login_timeout=30
+        )
+        logger.debug("✅ Conexión exitosa")
+        return conn
+    except Exception as e:
+        error_msg = f"❌ Error de conexión: {str(e)}"
+        logger.error(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 # Middleware de seguridad para API Key
 async def verify_api_key(x_api_key: Optional[str] = Header(None)):
@@ -153,9 +87,9 @@ async def root():
     """Endpoint de información básica de la API"""
     return {
         "message": "API MEC PCO funcionando correctamente",
-        "version": "1.0.1",
+        "version": "1.1.0",
         "status": "healthy",
-        "available_drivers": list(db_drivers.keys()),
+        "database_driver": "pymssql",
         "endpoints": {
             "health": "/health",
             "data": "/data?limit=10",

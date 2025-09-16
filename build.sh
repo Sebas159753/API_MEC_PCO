@@ -1,35 +1,21 @@
 #!/usr/bin/env bash
-# Build script optimizado para Render
+# Build script súper simple para Render
 set -o errexit
 
-echo "=== Iniciando build script ==="
+echo "=== Iniciando build optimizado para Render ==="
 
-# Actualizar sistema
-echo "Actualizando paquetes del sistema..."
+# Instalar solo lo esencial para pymssql
+echo "Instalando dependencias mínimas..."
 apt-get update
+apt-get install -y gcc g++ freetds-dev
 
-# Instalar dependencias del sistema necesarias
-echo "Instalando dependencias del sistema..."
-apt-get install -y \
-    build-essential \
-    gcc \
-    g++ \
-    unixodbc-dev \
-    freetds-dev \
-    freetds-bin \
-    libfreetds6
-
-# Limpiar cache
-echo "Limpiando cache de apt..."
+# Limpiar
 apt-get clean
 rm -rf /var/lib/apt/lists/*
 
-# Actualizar pip
-echo "Actualizando pip..."
+# Instalar Python packages
+echo "Instalando paquetes Python..."
 pip install --upgrade pip
-
-# Instalar dependencias de Python
-echo "Instalando dependencias de Python..."
 pip install --no-cache-dir -r requirements.txt
 
-echo "=== Build completado exitosamente ==="
+echo "=== Build completado ==="
