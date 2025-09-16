@@ -1,5 +1,10 @@
 fastapi==0.115.4
 uvicorn[standard]==0.32.0
-pyodbc==5.2.0
-sqlalchemy==2.0.23
+# Database drivers - pymssql es más fácil de instalar en contenedores
 pymssql==2.3.0
+# pyodbc como fallback si se necesita
+pyodbc==5.2.0
+# Otras dependencias útiles
+sqlalchemy==2.0.23
+requests==2.31.0
+python-multipart==0.0.6

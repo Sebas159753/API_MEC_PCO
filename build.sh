@@ -1,13 +1,35 @@
 #!/usr/bin/env bash
-# exit on error
+# Build script optimizado para Render
 set -o errexit
 
-# Install Microsoft ODBC drivers
-curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
-apt-get update
-ACCEPT_EULA=Y apt-get install -y msodbcsql18
-apt-get install -y unixodbc-dev
+echo "=== Iniciando build script ==="
 
+# Actualizar sistema
+echo "Actualizando paquetes del sistema..."
+apt-get update
+
+# Instalar dependencias del sistema necesarias
+echo "Instalando dependencias del sistema..."
+apt-get install -y \
+    build-essential \
+    gcc \
+    g++ \
+    unixodbc-dev \
+    freetds-dev \
+    freetds-bin \
+    libfreetds6
+
+# Limpiar cache
+echo "Limpiando cache de apt..."
+apt-get clean
+rm -rf /var/lib/apt/lists/*
+
+# Actualizar pip
+echo "Actualizando pip..."
 pip install --upgrade pip
-pip install -r requirements.txt
+
+# Instalar dependencias de Python
+echo "Instalando dependencias de Python..."
+pip install --no-cache-dir -r requirements.txt
+
+echo "=== Build completado exitosamente ==="

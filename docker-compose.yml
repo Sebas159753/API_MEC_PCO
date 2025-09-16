@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - SQL_SERVER=10.70.0.31
+      - SQL_DATABASE=dbcentral
+      - SQL_USERNAME=usrsicav
+      - SQL_PASSWORD=$icav2012*
+      - API_KEY=prueba
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
