@@ -152,7 +152,19 @@ async def get_data(limit: int = 10):
         
     except Exception as e:
         logger.error(f"Error fetching data: {e}")
-        raise HTTPException(status_code=500, detail=f"Error al obtener datos: {str(e)}")
+        # En caso de error de conexión, devolver datos de ejemplo
+        logger.warning("Returning mock data due to connection error")
+        return {
+            "status": "error_mock_data", 
+            "message": "Database not accessible from cloud. Returning sample data.",
+            "error": str(e),
+            "count": min(limit, 3),
+            "data": [
+                {"id": 1, "descripcion": "Ejemplo 1", "monto": 1000.50, "fecha": "2025-09-16"},
+                {"id": 2, "descripcion": "Ejemplo 2", "monto": 2500.75, "fecha": "2025-09-16"},
+                {"id": 3, "descripcion": "Ejemplo 3", "monto": 3200.25, "fecha": "2025-09-16"}
+            ][:limit]
+        }
     
     finally:
         if conn:
@@ -160,3 +172,29 @@ async def get_data(limit: int = 10):
                 conn.close()
             except:
                 pass
+
+@app.get("/data/mock", dependencies=[Depends(verify_api_key)], tags=["Data"])
+async def get_mock_data(limit: int = 10):
+    """
+    Endpoint de prueba que retorna datos simulados
+    """
+    import random
+    from datetime import datetime, timedelta
+    
+    mock_data = []
+    for i in range(min(limit, 100)):
+        mock_data.append({
+            "id": i + 1,
+            "codigo": f"COD{i+1:03d}",
+            "descripcion": f"Producto {i+1}",
+            "monto": round(random.uniform(100, 5000), 2),
+            "fecha": (datetime.now() - timedelta(days=random.randint(0, 30))).strftime("%Y-%m-%d"),
+            "activo": random.choice([True, False])
+        })
+    
+    return {
+        "status": "success",
+        "source": "mock_data",
+        "count": len(mock_data),
+        "data": mock_data
+    }
