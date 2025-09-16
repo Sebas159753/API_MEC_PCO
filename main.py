@@ -1,6 +1,11 @@
 from fastapi import FastAPI, Header, HTTPException, Depends
 import pyodbc
 import os
+try:
+    import pymssql
+    PYMSSQL_AVAILABLE = True
+except ImportError:
+    PYMSSQL_AVAILABLE = False
 
 app = FastAPI()
 
@@ -15,14 +20,34 @@ SQL_USERNAME = os.getenv("SQL_USERNAME", "usrsicav")
 SQL_PASSWORD = os.getenv("SQL_PASSWORD", "$icav2012*")
 API_KEY = os.getenv("API_KEY", "prueba")
 
-# Conexión ODBC
+# Conexión ODBC con fallback
 def get_connection():
-    conn_str = (
-        "DRIVER={ODBC Driver 18 for SQL Server};"
-        f"SERVER={SQL_SERVER};DATABASE={SQL_DATABASE};"
-        f"UID={SQL_USERNAME};PWD={SQL_PASSWORD};Encrypt=no;"
-    )
-    return pyodbc.connect(conn_str)
+    # Intentar primero con pyodbc
+    try:
+        conn_str = (
+            "DRIVER={ODBC Driver 18 for SQL Server};"
+            f"SERVER={SQL_SERVER};DATABASE={SQL_DATABASE};"
+            f"UID={SQL_USERNAME};PWD={SQL_PASSWORD};"
+            "Encrypt=no;TrustServerCertificate=yes;"
+        )
+        return pyodbc.connect(conn_str)
+    except Exception as e:
+        print(f"Error con pyodbc: {e}")
+        # Fallback a pymssql si está disponible
+        if PYMSSQL_AVAILABLE:
+            try:
+                import pymssql
+                return pymssql.connect(
+                    server=SQL_SERVER,
+                    database=SQL_DATABASE,
+                    user=SQL_USERNAME,
+                    password=SQL_PASSWORD
+                )
+            except Exception as e2:
+                print(f"Error con pymssql: {e2}")
+                raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
+        else:
+            raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
 
 # Middleware para API Key
 async def verify_api_key(x_api_key: str = Header(None)):
