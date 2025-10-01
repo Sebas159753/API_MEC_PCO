@@ -1,11 +1,15 @@
 services:
   - type: web
-    name: mec_pco_api
+    name: mec-pco-api
     env: node
     plan: free
-    buildCommand: "npm install"
-    startCommand: "npm start"
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        sync: false
       - key: DB_SERVER
         value: 10.70.0.31
       - key: DB_DATABASE
