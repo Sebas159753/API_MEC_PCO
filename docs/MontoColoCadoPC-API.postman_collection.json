@@ -1,0 +1,218 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "API MontoColoCadoPC",
+		"description": "Colección de Postman para probar la API REST de MontoColoCadoPC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345"
+	},
+	"item": [
+		{
+			"name": "Info y Salud",
+			"item": [
+				{
+					"name": "API Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api"
+							]
+						}
+					}
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Montos Colocados",
+			"item": [
+				{
+					"name": "Obtener todos los montos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/montos?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"montos"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener monto por RMV",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/montos/2010.1.02.00807",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"montos",
+								"2010.1.02.00807"
+							]
+						}
+					}
+				},
+				{
+					"name": "Filtrar por emisor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/montos?emi_nombre=Memorial",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"montos"
+							],
+							"query": [
+								{
+									"key": "emi_nombre",
+									"value": "Memorial"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener estadísticas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/montos/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"montos",
+								"stats"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear nuevo monto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"emi_nombre\": \"Empresa de Prueba S.A.\",\n  \"RMV\": \"2023.1.01.99999\",\n  \"Emision\": \"1\",\n  \"Vencimiento_oferta_publica\": \"2024-12-31T00:00:00.000Z\",\n  \"Monto_emitido\": 1000000,\n  \"Registro_de_Inscripcion\": \"REG2023001\",\n  \"Fecha_de_Emision_OP\": \"2023-01-01T00:00:00.000Z\",\n  \"Fecha_de_Vencimiento_OP\": \"2023-12-31T00:00:00.000Z\",\n  \"Calificacion\": \"AAA\",\n  \"Fecha_calificacion\": \"2023-01-01T00:00:00.000Z\",\n  \"Calificadora\": \"Calificadora Internacional S.A.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/montos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"montos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar monto",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"Monto_emitido\": 1500000,\n  \"Calificacion\": \"AA+\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/montos/2023.1.01.99999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"montos",
+								"2023.1.01.99999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar monto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/montos/2023.1.01.99999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"montos",
+								"2023.1.01.99999"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}
