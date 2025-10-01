@@ -5,22 +5,3 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        sync: false
-      - key: DB_SERVER
-        value: 10.70.0.31
-      - key: DB_DATABASE
-        value: DBCENTRAL
-      - key: DB_USER
-        value: usrsicav
-      - key: DB_PASSWORD
-        value: $icav2012*
-      - key: DB_ENCRYPT
-        value: true
-      - key: DB_TRUST_SERVER_CERTIFICATE
-        value: true
-      - key: API_KEY
-        value: tu_api_key_secreta
